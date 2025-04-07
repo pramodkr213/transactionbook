@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.google.api.client.util.Value;
+import org.springframework.beans.factory.annotation.Value;
 import com.transaction.book.jwtSecurity.CustomUserDetail;
 import com.transaction.book.jwtSecurity.JwtValidator;
 import com.transaction.book.services.serviceImpl.JwtTokenServiceImpl;
