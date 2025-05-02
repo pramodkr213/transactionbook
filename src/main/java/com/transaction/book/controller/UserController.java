@@ -93,7 +93,7 @@ public class UserController {
     }
 
     @PostMapping("/sendFCMToken")
-    public ResponseEntity<SuccessResponse> setFCMToken(@RequestHeader("Authorization")String jwt,@RequestParam(required = false)String token){
+    public ResponseEntity<SuccessResponse> setFCMToken(@RequestHeader("Authorization")String jwt,@RequestParam(required = false)String token,@RequestParam(required = false)boolean web){
         log.info("Setting FCM token for JWT: {}", jwt);
         SuccessResponse response = new SuccessResponse();
         User user = this.userServiceImpl.getUserByJwt(jwt);
@@ -105,7 +105,11 @@ public class UserController {
                 response.setStatusCode(500);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
-            user.setFcmToken(token);
+            if (web) {
+                user.setFcmTokenWeb(token);
+            } else {
+                user.setFcmToken(token);
+            }
             this.userServiceImpl.registerUser(user);
 
             log.info("FCM token set successfully for JWT: {}", jwt);
@@ -123,4 +127,5 @@ public class UserController {
         }
     }
     
+
 }

@@ -64,5 +64,10 @@ public class UserServiceImpl implements UserService{
     public List<String> getAllFcmTokens() {
         return this.userRepo.getAllFcmToken();
     }
+
+    @Override
+    public List<String> getAllWebFcmTokens() {
+        return this.userRepo.getAllFcmTokenWeb();
+    }
     
 }

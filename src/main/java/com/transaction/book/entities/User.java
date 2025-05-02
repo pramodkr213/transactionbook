@@ -33,6 +33,8 @@ public class User implements UserDetails{
 
     @Column(columnDefinition = "LONGTEXT")
     private String fcmToken;
+    @Column(columnDefinition = "LONGTEXT")
+    private String fcmTokenWeb;
 
 
     private boolean approved;

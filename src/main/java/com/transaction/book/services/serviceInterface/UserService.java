@@ -14,4 +14,5 @@ public interface UserService {
     List<User> getAllApprovalRequests();
     void deleteApprovalRequest(long id);
     List<String> getAllFcmTokens();
+    List<String> getAllWebFcmTokens();
 }
