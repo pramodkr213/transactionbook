@@ -3,6 +3,7 @@ package com.transaction.book.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,10 +15,10 @@ import com.transaction.book.entities.Customer;
 @Repository
 public interface CustomerRepo extends JpaRepository<Customer, Long> {
 
-    @Query(value = "SELECT * FROM customer WHERE mobile_no=:mobileNo AND delete_flag=false",nativeQuery = true)
+    @Query(value = "SELECT * FROM customer WHERE mobile_no=:mobileNo AND delete_flag=false", nativeQuery = true)
     Customer findByMobileNo(@Param("mobileNo") String mobileNo);
 
-    @Query(value = "SELECT * FROM customer WHERE id=:id AND delete_flag=false",nativeQuery = true)
+    @Query(value = "SELECT * FROM customer WHERE id=:id AND delete_flag=false", nativeQuery = true)
     Customer findById(long id);
 
     @Query("SELECT c FROM Customer c WHERE c.deleteFlag=false ORDER BY c.updateDate DESC")
@@ -31,7 +32,7 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
 
     @Query("""
                 SELECT new com.transaction.book.dto.responseDTO.CustomerResponse(
-                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate)
+                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate,c.isTagada,c.tagadaDate)
                 FROM Customer c
                 WHERE (:query IS NULL OR (c.name LIKE %:query% OR c.mobileNo LIKE %:query%))
                 AND (
@@ -53,7 +54,7 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
 
     @Query("""
                 SELECT new com.transaction.book.dto.responseDTO.CustomerResponse(
-                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate)
+                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate,c.isTagada,c.tagadaDate)
                 FROM Customer c
                 WHERE (c.dueDate=:today)
                 AND c.deleteFlag=false
@@ -62,13 +63,45 @@ public interface CustomerRepo extends JpaRepository<Customer, Long> {
 
     @Query("""
                 SELECT new com.transaction.book.dto.responseDTO.CustomerResponse(
-                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate)
+                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate,c.isTagada,c.tagadaDate)
+                FROM Customer c
+                WHERE (c.dueDate IS NOT NULL)
+                AND c.amount <> 0
+                AND c.deleteFlag=false
+            """)
+    List<CustomerResponse> findDueDateCusotmers();
+
+    @Query("""
+                SELECT new com.transaction.book.dto.responseDTO.CustomerResponse(
+                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate,c.isTagada,c.tagadaDate)
+                FROM Customer c
+                WHERE (c.dueDate IS NULL)
+                AND c.amount < 0
+                AND c.deleteFlag=false
+            """)
+    List<CustomerResponse> findSetReminderOnCustomers();
+
+    @Query("""
+                SELECT new com.transaction.book.dto.responseDTO.CustomerResponse(
+                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate,c.isTagada,c.tagadaDate)
                 FROM Customer c
                 WHERE (c.dueDate<:today)
+                AND c.amount <> 0
                 AND c.deleteFlag=false
             """)
     List<CustomerResponse> findDueDateCusotmersNotPaymentYet(@Param("today") String today);
 
     @Query("SELECT new com.transaction.book.dto.responseDTO.CusotomerFullResponse(c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate, c.address,c.reference) FROM Customer c WHERE c.name = :name AND c.deleteFlag=false")
-    CusotomerFullResponse findCustomerResponseByName(@Param("name") String  name);
+    CusotomerFullResponse findCustomerResponseByName(@Param("name") String name);
+
+    @Query("""
+                SELECT new com.transaction.book.dto.responseDTO.CustomerResponse(
+                    c.id, c.name, c.mobileNo, c.gstinNo, c.amount, c.dueDate, c.updateDate,c.isTagada,c.tagadaDate)
+                FROM Customer c
+                WHERE c.dueDate IS NOT NULL
+                AND c.isTagada=true
+                AND c.tagadaDate IS NOT NULL
+                AND c.deleteFlag=false
+            """)
+    List<CustomerResponse> findTagadaCustomers();
 }

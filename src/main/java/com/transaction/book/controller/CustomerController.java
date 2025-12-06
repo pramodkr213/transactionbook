@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -67,12 +68,12 @@ public class CustomerController {
 
     @PostMapping("/addCustomer")
     public ResponseEntity<DataResponse> addCustomer(@RequestPart @Valid CustomerRequestDto request,
-                                                    @RequestPart(value = "bill", required = false) MultipartFile bill) {
+            @RequestPart(value = "bill", required = false) MultipartFile bill) {
         log.info("Adding customer with name: {}", request.getName());
         DataResponse response = new DataResponse();
         Customer customer2 = new Customer();
         customer2 = this.customerServiceImpl.getCustomerByMobileNo(request.getMobileNo());
-        if(customer2!=null){
+        if (customer2 != null) {
             log.warn("Customer with mobile number: {} already exists", request.getMobileNo());
             response.setMessage("Customer alredy present!");
             response.setHttpStatus(HttpStatus.ALREADY_REPORTED);
@@ -81,7 +82,7 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
         }
         CusotomerFullResponse customer1 = this.customerServiceImpl.getCustomerResponseByName(request.getName());
-        if(customer1!=null){
+        if (customer1 != null) {
             log.warn("Customer with name: {} already exists", request.getName());
             response.setMessage("customer Name already present!");
             response.setHttpStatus(HttpStatus.ALREADY_REPORTED);
@@ -117,17 +118,17 @@ public class CustomerController {
                 this.transactionServiceImpl.addTransaction(transaction);
             }
 
-            if(request.getAddress()!=null){
-            Address address = new Address();
-            address.setBuildingNo(request.getAddress().getBuildingNo());
-            address.setArea(request.getAddress().getArea());
-            address.setCity(request.getAddress().getCity());
-            address.setPincode(request.getAddress().getPincode());
-            address.setState(request.getAddress().getState());
-            address.setCustomer(customer);
-            this.addressServiceImpl.addAddress(address);
+            if (request.getAddress() != null) {
+                Address address = new Address();
+                address.setBuildingNo(request.getAddress().getBuildingNo());
+                address.setArea(request.getAddress().getArea());
+                address.setCity(request.getAddress().getCity());
+                address.setPincode(request.getAddress().getPincode());
+                address.setState(request.getAddress().getState());
+                address.setCustomer(customer);
+                this.addressServiceImpl.addAddress(address);
             }
-            customer =this.customerServiceImpl.addCustomer(customer);
+            customer = this.customerServiceImpl.addCustomer(customer);
             response.setData(customer);
             log.info("Customer added successfully with name: {}", request.getName());
             response.setMessage("customer added successfully !");
@@ -209,11 +210,11 @@ public class CustomerController {
     }
 
     @PostMapping("/updateCustomer")
-    public ResponseEntity<SuccessResponse> updateCustomer(@Valid @RequestBody UpdateCustomer request){
+    public ResponseEntity<SuccessResponse> updateCustomer(@Valid @RequestBody UpdateCustomer request) {
         log.info("Updating customer with ID: {}", request.getId());
         SuccessResponse response = new SuccessResponse();
         Customer customer = this.customerServiceImpl.getCustomerById(request.getId());
-        if(customer==null){
+        if (customer == null) {
             log.warn("Customer with ID: {} not found", request.getId());
             response.setMessage("something went wrong !");
             response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -225,8 +226,8 @@ public class CustomerController {
             customer.setGstinNo(request.getGstinNo());
             customer.setMobileNo(request.getMobileNo());
             customer.setReference(request.getReference());
-            if(request.getAddress()!=null){
-                if(customer.getAddress()==null){
+            if (request.getAddress() != null) {
+                if (customer.getAddress() == null) {
                     Address address = new Address();
                     address.setArea(request.getAddress().getArea());
                     address.setBuildingNo(request.getAddress().getBuildingNo());
@@ -235,7 +236,7 @@ public class CustomerController {
                     address.setState(request.getAddress().getState());
                     address.setCustomer(customer);
                     this.addressServiceImpl.addAddress(address);
-                }else{
+                } else {
                     Address address = customer.getAddress();
                     address.setArea(request.getAddress().getArea());
                     address.setBuildingNo(request.getAddress().getBuildingNo());
@@ -260,33 +261,36 @@ public class CustomerController {
     }
 
     @PostMapping("/setDueDate")
-    public ResponseEntity<SuccessResponse> setDueDate(@Valid @RequestBody DueDateRequest request){
+    public ResponseEntity<SuccessResponse> setDueDate(@Valid @RequestBody DueDateRequest request) {
         log.info("Setting due date for customer with ID: {}", request.getId());
         SuccessResponse response = new SuccessResponse();
         try {
             Customer customer = this.customerServiceImpl.getCustomerById(request.getId());
+            customer.setTagada(false);
+            customer.setTagadaDate(null);
             customer.setDueDate(request.getDueDate());
-            
+
             Remainder remainder1 = this.RemainderServiceImpl.getExactLastRemainder(customer.getId());
-            if(remainder1!=null && remainder1.getStatus().equals(RemainderStatus.Upcoming)){
+            if (remainder1 != null && remainder1.getStatus().equals(RemainderStatus.Upcoming)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
-                
+
                 LocalDate previousDate = LocalDate.parse(remainder1.getDueDate(), formatter);
                 LocalDate newDate = LocalDate.parse(request.getDueDate(), formatter);
-                
+
                 if (newDate.isBefore(previousDate) || newDate.isEqual(previousDate)) {
-                    response.setMessage("Set a later due date after "+(previousDate.format(formatter2))+" or remove the previous remainder.");
+                    response.setMessage("Set a later due date after " + (previousDate.format(formatter2))
+                            + " or remove the previous remainder.");
                     response.setHttpStatus(HttpStatus.BAD_REQUEST);
                     response.setStatusCode(400);
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
                 }
-                
+
                 customer = this.customerServiceImpl.addCustomer(customer);
 
-                if(request.getReason()==null){
+                if (request.getReason() == null) {
                     remainder1.setReason("Next time");
-                }else{
+                } else {
                     remainder1.setReason(request.getReason());
                 }
                 remainder1.setAmount(request.getAmount());
@@ -316,7 +320,7 @@ public class CustomerController {
     }
 
     @GetMapping("/getCustomersOnDueDate")
-    public ResponseEntity<?> getCustomersOnDueDate(){
+    public ResponseEntity<?> getCustomersOnDueDate() {
         log.info("Fetching customers on due date");
         try {
             DataResponse response = new DataResponse();
@@ -335,9 +339,9 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-   
+
     @GetMapping("/getCustomerRemainders/{customerId}")
-    public ResponseEntity<?> getCustomerRemainders(@PathVariable("customerId")long id){
+    public ResponseEntity<?> getCustomerRemainders(@PathVariable("customerId") long id) {
         log.info("Fetching remainders for customer with ID: {}", id);
         try {
             List<Remainder> remainders = this.RemainderServiceImpl.getAllRemindersByCustomerId(id);
@@ -348,10 +352,10 @@ public class CustomerController {
             response.setHttpStatus(HttpStatus.OK);
             response.setData(remainders);
             return ResponseEntity.of(Optional.of(response));
-            
+
         } catch (Exception e) {
             log.error("Error fetching remainders for customer with ID: {}: {}", id, e.getMessage());
-            SuccessResponse response =new  SuccessResponse();
+            SuccessResponse response = new SuccessResponse();
             response.setMessage(e.getMessage());
             response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             response.setStatusCode(500);
@@ -361,14 +365,13 @@ public class CustomerController {
     }
 
     @GetMapping("/downLoadRemainders/{customerId}")
-    public ResponseEntity<?> downloadRemainderPdf(@PathVariable("customerId")long id){
+    public ResponseEntity<?> downloadRemainderPdf(@PathVariable("customerId") long id) {
         log.info("Downloading remainder PDF for customer with ID: {}", id);
         try {
             CusotomerFullResponse customer = this.customerServiceImpl.getCustomerResponseById(id);
 
-
-            List<Remainder> remainders= this.RemainderServiceImpl.getAllRemindersByCustomerId(id);
-            byte[] pdfBytes = pdfFromat.generateCustomerRemainderPdf(remainders,customer);
+            List<Remainder> remainders = this.RemainderServiceImpl.getAllRemindersByCustomerId(id);
+            byte[] pdfBytes = pdfFromat.generateCustomerRemainderPdf(remainders, customer);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "inline; filename=statement.pdf");
@@ -388,16 +391,17 @@ public class CustomerController {
     }
 
     @DeleteMapping("removeDueDate/{customerId}/{date}")
-    public ResponseEntity<?>  removeDueDate(@PathVariable("customerId") long id ,@PathVariable("date")String date){
+    public ResponseEntity<?> removeDueDate(@PathVariable("customerId") long id, @PathVariable("date") String date) {
         log.info("Removing due date for customer with ID: {} and date: {}", id, date);
         try {
             Remainder remainder = this.RemainderServiceImpl.getRemainderByDate(date, id);
             remainder.setDelete(true);
             this.RemainderServiceImpl.addRemainder(remainder);
 
-
             Customer customer = this.customerServiceImpl.getCustomerById(id);
             customer.setDueDate(null);
+            customer.setTagada(false);
+            customer.setTagadaDate(null);
             this.customerServiceImpl.addCustomer(customer);
             SuccessResponse response = new SuccessResponse();
             log.info("Due date removed successfully for customer with ID: {} and date: {}", id, date);
@@ -412,6 +416,41 @@ public class CustomerController {
             response.setStatusCode(200);
             response.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PutMapping("setTagada/{customerId}/{date}")
+    public ResponseEntity<?> setTagadaCustomer(@PathVariable("customerId") long id, @PathVariable("date") String date) {
+
+        try {
+            SuccessResponse response = new SuccessResponse();
+
+            this.customerServiceImpl.setTagada(id, date);
+
+            response.setMessage("Tagada set successfully");
+            response.setHttpStatus(HttpStatus.OK);
+            response.setStatusCode(200);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+
+        } catch (Exception e) {
+            SuccessResponse response = new SuccessResponse();
+            response.setHttpStatus(HttpStatus.BAD_REQUEST);
+            response.setStatusCode(400);
+            response.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+
+     // Soft-delete (flag as tagada)
+    @PutMapping("/{customerId}/tagada")
+    public ResponseEntity<String> deleteTagada(@PathVariable long customerId) {
+        try {
+            customerServiceImpl.deleteTagada(customerId);
+            return ResponseEntity.ok("Customer marked as tagada removed successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 

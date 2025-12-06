@@ -23,10 +23,7 @@ import org.springframework.context.annotation.Configuration;
             email = "#",
             url = "#"
         )
-        // license = @License(
-        //     name = "Apache 2.0",
-        //     url = "https://www.apache.org/licenses/LICENSE-2.0"
-        // )
+    
     ),
     servers = {
         // @Server(url = "#", description = "Production Server"),

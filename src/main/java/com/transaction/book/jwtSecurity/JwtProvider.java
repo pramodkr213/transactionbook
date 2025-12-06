@@ -17,51 +17,49 @@ public class JwtProvider {
 
     public static SecretKey key = Keys.hmacShaKeyFor(JwtConstants.getApiKey().getBytes());
 
-    public static JwtToken generateJwt(Authentication authentication,ClientType clientType){
+    public static JwtToken generateJwt(Authentication authentication, ClientType clientType) {
         JwtToken jwtToken = new JwtToken();
-        Long expirationTime=0L;
-        if(clientType.equals(ClientType.WEB)){
-            expirationTime = 24*60*60*1000L;
-        }
-        else if(clientType.equals(ClientType.MOBILE)){
-            expirationTime = 90*24*60*60*1000L;
-        }
-        else{
-            expirationTime = 60*60*1000L;
+        Long expirationTime = 0L;
+        if (clientType.equals(ClientType.WEB)) {
+            expirationTime = 24 * 60 * 60 * 1000L;
+        } else if (clientType.equals(ClientType.MOBILE)) {
+            expirationTime = 90 * 24 * 60 * 60 * 1000L;
+        } else {
+            expirationTime = 60 * 60 * 1000L;
         }
 
         String jwt = Jwts.builder()
-                    .setIssuer("ok").setIssuedAt(new Date())
-                    .setExpiration(new Date(new Date().getTime()+84600000))
-                    .claim("email", authentication.getName())
-                    .claim("role", authentication.getAuthorities().toArray()[0].toString())
-                    .signWith(key)
-                    .compact();
+                .setIssuer("ok").setIssuedAt(new Date())
+                .setExpiration(new Date(new Date().getTime() + expirationTime))
+                .claim("email", authentication.getName())
+                .claim("role", authentication.getAuthorities().toArray()[0].toString())
+                .signWith(key)
+                .compact();
         jwtToken.setToken(jwt);
         jwtToken.setExpiration(expirationTime);
-            
+
         return jwtToken;
     }
 
-    public static String getEmailByJwt(String jwt){
+    public static String getEmailByJwt(String jwt) {
         if (jwt.startsWith("Bearer ")) {
             jwt = jwt.substring(7);
         }
         Claims claims = Jwts.parser()
-                        .setSigningKey(key).build()
-                        .parseClaimsJws(jwt).getBody();
+                .setSigningKey(key).build()
+                .parseClaimsJws(jwt).getBody();
 
         String mobileNo = String.valueOf(claims.get("email"));
         return mobileNo;
     }
 
-    public static String getRoleByJwt(String jwt){
+    public static String getRoleByJwt(String jwt) {
         if (jwt.startsWith("Bearer ")) {
             jwt = jwt.substring(7);
         }
         Claims claims = Jwts.parser()
-                        .setSigningKey(key).build()
-                        .parseClaimsJws(jwt).getBody();
+                .setSigningKey(key).build()
+                .parseClaimsJws(jwt).getBody();
 
         String mobileNo = String.valueOf(claims.get("role"));
         return mobileNo;

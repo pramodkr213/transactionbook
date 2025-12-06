@@ -9,16 +9,29 @@ import com.transaction.book.entities.Customer;
 
 public interface CustomerService {
     Customer addCustomer(Customer customer);
+
     Customer getCustomerByMobileNo(String mobileNO);
+
     Customer getCustomerById(long id);
+
     List<Customer> getAllCustomers();
+
     void deleteCusotmer(long id);
+
     double getTotalGetAmount();
+
     double getToalGaveAmount();
 
     CusotomerFullResponse getCustomerResponseById(long id);
+
     CusotomerFullResponse getCustomerResponseByName(String name);
-    List<CustomerResponse> findAllCustomerResponse(String query,boolean gave,boolean get,boolean settel);
+
+    List<CustomerResponse> findAllCustomerResponse(String query, boolean gave, boolean get, boolean settel);
+
+    void setTagada(long customerId, String date) throws Exception;
 
     DueDate getDueDateCustomer();
+
+    // tegada delete...
+    void deleteTagada(long customerId ) throws Exception;
 }

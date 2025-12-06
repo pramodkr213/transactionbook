@@ -26,14 +26,16 @@ public class Customer {
     private String dueDate;
     private String updateDate;
     private String reference;
-    private boolean deleteFlag=false;
+    private boolean deleteFlag = false;
+    private boolean isTagada = false;
+    private String tagadaDate;
 
-    @OneToMany(mappedBy = "customer",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 
-    @OneToOne(mappedBy = "customer",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Address address;
 
-    @OneToMany(mappedBy = "customer",fetch =FetchType.LAZY, cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Remainder> remainders;
 }

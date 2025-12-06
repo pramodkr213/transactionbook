@@ -9,43 +9,52 @@ import org.springframework.stereotype.Service;
 import com.transaction.book.services.serviceInterface.ScheduledMethodService;
 
 @Service
-public class ScheduledMethodServiceImpl implements ScheduledMethodService{
+public class ScheduledMethodServiceImpl implements ScheduledMethodService {
 
     private final FCMService fcmService;
     private final UserServiceImpl userServiceImpl;
 
     @Value("${app.cors.allowed-origins}")
-    private String[] allowedOrigins; 
+    private String[] allowedOrigins;
 
     public ScheduledMethodServiceImpl(FCMService fcmService, UserServiceImpl userServiceImpl) {
         this.fcmService = fcmService;
         this.userServiceImpl = userServiceImpl;
     }
 
-    @Scheduled(cron = "0 0 11 * * ?")
+    // @Scheduled(cron = "0 */5 * * * ?")
+    @Scheduled(cron = "0 00 11 * * ?")
     @Override
     public void sendMorningNotification() {
         List<String> userTokens = this.userServiceImpl.getAllFcmTokens();
-        userTokens.addAll(this.userServiceImpl.getAllWebFcmTokens());
-        if(userTokens.isEmpty() || userTokens==null){
+        List<String> webUserTokens = this.userServiceImpl.getAllWebFcmTokens();
+        if (userTokens.isEmpty() || userTokens == null) {
             return;
         }
-        for(String userToken:userTokens){
-            fcmService.sendNotification(userToken, "Due Date Reminder", "Reminder regarding money !",allowedOrigins[0]);
+        for (String userToken : userTokens) {
+            fcmService.sendNotification(userToken, "Due Date Reminder", "Reminder regarding money !");
+        }
+        for (String webUserToken : webUserTokens) {
+            fcmService.sendNotification(webUserToken, "Due Date Reminder", "Reminder regarding money !",
+                    allowedOrigins[0]);
         }
     }
 
-    @Scheduled(cron = "0 0 19 * * ?")
+    @Scheduled(cron = "0 00 19 * * ?")
     @Override
     public void sendEveningNotification() {
         List<String> userTokens = this.userServiceImpl.getAllFcmTokens();
-        userTokens.addAll(this.userServiceImpl.getAllWebFcmTokens());
-        if(userTokens.isEmpty() || userTokens==null){
+        List<String> webUserTokens = this.userServiceImpl.getAllWebFcmTokens();
+        if (userTokens.isEmpty() || userTokens == null) {
             return;
         }
-        for(String userToken:userTokens){
-            fcmService.sendNotification(userToken, "Due Date Reminder", "Reminder regarding money !",allowedOrigins[0]);
+        for (String userToken : userTokens) {
+            fcmService.sendNotification(userToken, "Due Date Reminder", "Reminder regarding money !");
+        }
+        for (String webUserToken : webUserTokens) {
+            fcmService.sendNotification(webUserToken, "Due Date Reminder", "Reminder regarding money !",
+                    allowedOrigins[0]);
         }
     }
-    
+
 }

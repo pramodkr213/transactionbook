@@ -47,10 +47,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCusotmer(long id) {
         Customer customer = this.customerRepo.findById(id);
-        if(customer.getTransactions()!=null){
-            for(Transaction transaction:customer.getTransactions()){
+        if (customer.getTransactions() != null) {
+            for (Transaction transaction : customer.getTransactions()) {
                 transaction.setDeleteFlag(true);
-                this.transactionRepo.save(transaction);  
+                this.transactionRepo.save(transaction);
             }
         }
         customer.setDeleteFlag(true);
@@ -74,16 +74,20 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<CustomerResponse> findAllCustomerResponse(String query,boolean gave,boolean get,boolean settel) {
-        return this.customerRepo.findAllCustomerResponse(query,gave,get,settel);
+    public List<CustomerResponse> findAllCustomerResponse(String query, boolean gave, boolean get, boolean settel) {
+        return this.customerRepo.findAllCustomerResponse(query, gave, get, settel);
     }
 
     @Override
     public DueDate getDueDateCustomer() {
         DueDate dueDate = new DueDate();
-        dueDate.setTodaysDueDate(this.customerRepo.findTodaysDueDateCusotmers(String .valueOf(LocalDate.now())));
-        dueDate.setTomorrowDueDate(this.customerRepo.findTodaysDueDateCusotmers(String.valueOf(LocalDate.now().plusDays(1))));
-        dueDate.setNotPaymentYet(this.customerRepo.findDueDateCusotmersNotPaymentYet(String .valueOf(LocalDate.now())));
+        dueDate.setTodaysDueDate(this.customerRepo.findTodaysDueDateCusotmers(String.valueOf(LocalDate.now())));
+        dueDate.setTomorrowDueDate(
+                this.customerRepo.findTodaysDueDateCusotmers(String.valueOf(LocalDate.now().plusDays(1))));
+        dueDate.setNotPaymentYet(this.customerRepo.findDueDateCusotmersNotPaymentYet(String.valueOf(LocalDate.now())));
+        dueDate.setAllDueConstomers(this.customerRepo.findDueDateCusotmers());
+        dueDate.setReminderOnCustomers(this.customerRepo.findSetReminderOnCustomers());
+        dueDate.setTagadaCustomers(this.customerRepo.findTagadaCustomers());
         return dueDate;
     }
 
@@ -92,4 +96,29 @@ public class CustomerServiceImpl implements CustomerService {
         return this.customerRepo.findCustomerResponseByName(name);
     }
 
+    @Override
+    public void setTagada(long customerId, String date) throws Exception {
+        Customer customer = this.getCustomerById(customerId);
+
+        if (customer == null) {
+            throw new Exception("Customer Not Found!!");
+        }
+
+        customer.setTagada(true);
+        customer.setTagadaDate(date);
+
+        this.customerRepo.save(customer);
+    }
+    
+    @Override
+    public void deleteTagada(long customerId) throws Exception {
+        Customer customer = this.getCustomerById(customerId);
+        if (customer == null) {
+            throw new Exception("Customer Not Found!!");
+        }
+        customer.setTagada(true);
+        this.customerRepo.save(customer);
+        // TODO Auto-generated method stub
+        
+    }
 }

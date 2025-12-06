@@ -28,98 +28,97 @@ public class TransactionMethods {
     @Autowired
     private RemainderServiceImpl remainderServiceImpl;
 
-    public boolean addNewTransaction(NewTransactionRequest request,byte[] bill){
+    public boolean addNewTransaction(NewTransactionRequest request, byte[] bill) {
         Customer customer = this.customerServiceImpl.getCustomerById(request.getCustomerId());
         Transaction transaction = new Transaction();
-            transaction.setDate(request.getDate());
-            transaction.setDetail(request.getDetail());
-            transaction.setBill(bill);
+        transaction.setDate(request.getDate());
+        transaction.setDetail(request.getDetail());
+        transaction.setBill(bill);
 
-            if(request.isGave()){
-                customer.setAmount(customer.getAmount()+(request.getAmount()*(-1)));
-                transaction.setAmount(request.getAmount()*(-1));
+        if (request.isGave()) {
+            customer.setAmount(customer.getAmount() + (request.getAmount() * (-1)));
+            transaction.setAmount(request.getAmount() * (-1));
+        } else {
+            customer.setAmount(customer.getAmount() + request.getAmount());
+            transaction.setAmount(request.getAmount());
+
+            Remainder remainder = this.remainderServiceImpl.getExactLastRemainder(customer.getId());
+            if (remainder != null && remainder.getStatus().equals(RemainderStatus.Upcoming)) {
+                remainder.setStatus(RemainderStatus.Paid);
+                remainder.setAmount(request.getAmount());
+                this.remainderServiceImpl.addRemainder(remainder);
+                customer.setDueDate(null);
+                customer.setTagada(false);
+                customer.setTagadaDate(null);
             }
-            else{
-                customer.setAmount(customer.getAmount()+request.getAmount());
-                transaction.setAmount(request.getAmount());
+        }
 
+        Transaction transaction3 = this.transactionServiceImpl.findPreviousTransaction(customer.getId(),
+                request.getDate());
+        if (transaction3 == null) {
+            transaction.setBalanceAmount(transaction.getAmount());
+        } else {
+            transaction.setBalanceAmount(transaction3.getBalanceAmount() + transaction.getAmount());
+        }
 
-                Remainder remainder = this.remainderServiceImpl.getExactLastRemainder(customer.getId());
-                if(remainder!=null && remainder.getStatus().equals(RemainderStatus.Upcoming)){
-                    remainder.setStatus(RemainderStatus.Paid);
-                    remainder.setAmount(request.getAmount());
-                    this.remainderServiceImpl.addRemainder(remainder);
-                    customer.setDueDate(null);
-                }
-            }
+        customer.setUpdateDate(DateTimeFormat.format(LocalDateTime.now()));
+        customer = this.customerServiceImpl.addCustomer(customer);
 
-            Transaction transaction3 = this.transactionServiceImpl.findPreviousTransaction(customer.getId(), request.getDate());
-            if(transaction3==null){
-                transaction.setBalanceAmount(transaction.getAmount());
-            }else{
-                transaction.setBalanceAmount(transaction3.getBalanceAmount()+transaction.getAmount());
-            }
+        transaction.setCustomer(customer);
+        transaction = this.transactionServiceImpl.addTransaction(transaction);
 
-            
-
-            customer.setUpdateDate(DateTimeFormat.format(LocalDateTime.now()));
-            customer= this.customerServiceImpl.addCustomer(customer);
-
-            transaction.setCustomer(customer);
-            transaction = this.transactionServiceImpl.addTransaction(transaction);
-
-            double balance = transaction.getBalanceAmount();
-            for(Transaction transaction2:this.transactionServiceImpl.getAfterTransactions(customer.getId(), request.getDate())){
-                transaction2.setBalanceAmount(balance+transaction2.getAmount());
-                transaction2= this.transactionServiceImpl.addTransaction(transaction2);
-                balance = transaction2.getBalanceAmount();
-            }
-            return true;
+        double balance = transaction.getBalanceAmount();
+        for (Transaction transaction2 : this.transactionServiceImpl.getAfterTransactions(customer.getId(),
+                request.getDate())) {
+            transaction2.setBalanceAmount(balance + transaction2.getAmount());
+            transaction2 = this.transactionServiceImpl.addTransaction(transaction2);
+            balance = transaction2.getBalanceAmount();
+        }
+        return true;
     }
 
-    public boolean updateTransaction(long id,UpdateTransaction request,byte[] bill){
+    public boolean updateTransaction(long id, UpdateTransaction request, byte[] bill) {
         Customer customer = this.customerServiceImpl.getCustomerById(id);
         Transaction transaction1 = this.transactionServiceImpl.getTransactionById(request.getId());
-        customer.setAmount(customer.getAmount()-transaction1.getAmount());
+        customer.setAmount(customer.getAmount() - transaction1.getAmount());
         transaction1.setDate(null);
         Transaction transaction = new Transaction();
         transaction = this.transactionServiceImpl.addTransaction(transaction1);
-            transaction.setDate(request.getDate());
-            transaction.setDetail(request.getDetail());
+        transaction.setDate(request.getDate());
+        transaction.setDetail(request.getDetail());
 
-            if(request.isGave()){
-                customer.setAmount(customer.getAmount()+(request.getAmount()*(-1)));
-                transaction.setAmount(request.getAmount()*(-1));
-            }
-            else{
-                customer.setAmount(customer.getAmount()+request.getAmount());
-                transaction.setAmount(request.getAmount());
-            }
+        if (request.isGave()) {
+            customer.setAmount(customer.getAmount() + (request.getAmount() * (-1)));
+            transaction.setAmount(request.getAmount() * (-1));
+        } else {
+            customer.setAmount(customer.getAmount() + request.getAmount());
+            transaction.setAmount(request.getAmount());
+        }
 
-            Transaction transaction3 = this.transactionServiceImpl.findPreviousTransaction(customer.getId(), request.getDate());
-            if(transaction3==null){
-                transaction.setBalanceAmount(transaction.getAmount());
-            }else{
-                transaction.setBalanceAmount(transaction3.getBalanceAmount()+transaction.getAmount());
-            }
+        Transaction transaction3 = this.transactionServiceImpl.findPreviousTransaction(customer.getId(),
+                request.getDate());
+        if (transaction3 == null) {
+            transaction.setBalanceAmount(transaction.getAmount());
+        } else {
+            transaction.setBalanceAmount(transaction3.getBalanceAmount() + transaction.getAmount());
+        }
 
-            
+        customer.setUpdateDate(DateTimeFormat.format(LocalDateTime.now()));
+        customer = this.customerServiceImpl.addCustomer(customer);
 
-            customer.setUpdateDate(DateTimeFormat.format(LocalDateTime.now()));
-            customer= this.customerServiceImpl.addCustomer(customer);
+        transaction.setCustomer(customer);
+        if (bill != null) {
+            transaction.setBill(bill);
+        }
+        transaction = this.transactionServiceImpl.addTransaction(transaction);
 
-            transaction.setCustomer(customer);
-            if(bill!=null){
-                transaction.setBill(bill);
-            }
-            transaction = this.transactionServiceImpl.addTransaction(transaction);
-
-            double balance = transaction.getBalanceAmount();
-            for(Transaction transaction2:this.transactionServiceImpl.getAfterTransactions(customer.getId(), request.getDate())){
-                transaction2.setBalanceAmount(balance+transaction2.getAmount());
-                transaction2= this.transactionServiceImpl.addTransaction(transaction2);
-                balance = transaction2.getBalanceAmount();
-            }
-            return true;
+        double balance = transaction.getBalanceAmount();
+        for (Transaction transaction2 : this.transactionServiceImpl.getAfterTransactions(customer.getId(),
+                request.getDate())) {
+            transaction2.setBalanceAmount(balance + transaction2.getAmount());
+            transaction2 = this.transactionServiceImpl.addTransaction(transaction2);
+            balance = transaction2.getBalanceAmount();
+        }
+        return true;
     }
 }

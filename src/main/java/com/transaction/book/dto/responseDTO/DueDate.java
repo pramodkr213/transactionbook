@@ -9,4 +9,7 @@ public class DueDate {
     List<CustomerResponse> todaysDueDate;
     List<CustomerResponse> tomorrowDueDate;
     List<CustomerResponse> notPaymentYet;
+    List<CustomerResponse> allDueConstomers;
+    List<CustomerResponse> reminderOnCustomers;
+    List<CustomerResponse> tagadaCustomers;
 }
