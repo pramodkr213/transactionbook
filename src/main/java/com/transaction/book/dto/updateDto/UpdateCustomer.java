@@ -30,4 +30,21 @@ public class UpdateCustomer {
     private String reference;
 
     private AddressRequest address;
+    
+
+   private double goldSellingAmt;
+ 
+   private double goldTakenAmt;
+  
+   private double goldWgt;
+
+   private double silverSellingAmt;
+  
+   private double silverTakenAmt;
+  
+   private double silverWgt;
+  
+   private double interest;
+  
+   private String detail;
 }

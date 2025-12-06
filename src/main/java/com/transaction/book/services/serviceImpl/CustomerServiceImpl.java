@@ -1,14 +1,19 @@
 package com.transaction.book.services.serviceImpl;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.transaction.book.dto.responseDTO.CusotomerFullResponse;
 import com.transaction.book.dto.responseDTO.CustomerResponse;
 import com.transaction.book.dto.responseDTO.DueDate;
+import com.transaction.book.dto.responseDTO.OldCustomerResponse;
 import com.transaction.book.entities.Customer;
 import com.transaction.book.entities.Transaction;
 import com.transaction.book.repository.CustomerRepo;
@@ -23,6 +28,17 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private TransactionRepo transactionRepo;
+    
+   
+    public List<OldCustomerResponse> getOldCustomers() {
+        List<Object[]> result = customerRepo.findOldCustomerNamesAndMobiles();
+        return result.stream()
+                .map(row -> new OldCustomerResponse(
+                        (String) row[0], // name
+                        (String) row[1]  // mobile_no
+                ))
+                .collect(Collectors.toList());
+    }
 
     @Override
     public Customer addCustomer(Customer customer) {

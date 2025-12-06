@@ -1,5 +1,6 @@
 package com.transaction.book.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +15,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.transaction.book.dto.requestDTO.HistryPaymentRequest;
 import com.transaction.book.dto.responseDTO.Dashboard;
 import com.transaction.book.dto.responseObjects.DataResponse;
 import com.transaction.book.dto.responseObjects.SuccessResponse;
 import com.transaction.book.entities.Customer;
+import com.transaction.book.entities.HistryPayment;
 import com.transaction.book.entities.User;
+import com.transaction.book.repository.HistryPaymentRepository;
 import com.transaction.book.services.serviceImpl.CustomerServiceImpl;
 import com.transaction.book.services.serviceImpl.UserServiceImpl;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -35,6 +40,8 @@ public class UserController {
 
     @Autowired
     private CustomerServiceImpl customerServiceImpl;
+    @Autowired
+    private HistryPaymentRepository histryPaymentRepository;
 
     @GetMapping("/getProfile")
     public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String jwt) {
@@ -154,4 +161,26 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    @GetMapping("/history/{customerId}")
+    public List<HistryPayment> getPaymentHistory(@PathVariable Long customerId) {
+        return histryPaymentRepository.findByCustomerId(customerId);
+    }
+
+//     @PostMapping("/add/history")
+// public void addEntities(@RequestBody List<HistryPayment> payments) {
+//     histryPaymentRepository.saveAll(payments);
+// }
+
+ @PostMapping("/add/history")
+public ResponseEntity<DataResponse> addEntities(@RequestBody HistryPaymentRequest request) {
+     histryPaymentRepository.saveAll(request.getHistoryPayments());
+
+    return ResponseEntity.ok().body(new DataResponse() {{
+        setMessage("History payments added successfully!");
+        setHttpStatus(HttpStatus.OK);
+        setStatusCode(200);
+        setData(request.getHistoryPayments());
+    }});
+}
 }

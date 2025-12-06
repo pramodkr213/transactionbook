@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.transaction.book.dto.requestDTO.HistryPaymentRequest;
 import com.transaction.book.dto.responseObjects.DataResponse;
 import com.transaction.book.dto.responseObjects.SuccessResponse;
 import com.transaction.book.entities.User;
+import com.transaction.book.repository.HistryPaymentRepository;
 import com.transaction.book.services.serviceImpl.UserServiceImpl;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -28,6 +31,9 @@ public class AdminCotroller {
 
     @Autowired
     private UserServiceImpl userServiceImpl;
+
+    private HistryPaymentRepository histryPaymentRepository;
+    
     
     @GetMapping("/allApprovalRequests")
     public ResponseEntity<DataResponse> allApprovalRequests(){
@@ -93,4 +99,16 @@ public class AdminCotroller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+	@PostMapping("/add/history")
+	public ResponseEntity<DataResponse> addEntities(@RequestBody HistryPaymentRequest request) {
+	     histryPaymentRepository.saveAll(request.getHistoryPayments());
+	
+	    return ResponseEntity.ok().body(new DataResponse() {{
+	        setMessage("History payments added successfully!");
+	        setHttpStatus(HttpStatus.OK);
+	        setStatusCode(200);
+	        setData(request.getHistoryPayments());
+	    }});
+	}
+    
 }

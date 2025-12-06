@@ -1,5 +1,7 @@
 package com.transaction.book.services.serviceImpl;
 
+import org.springframework.stereotype.Service;
+
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
@@ -8,8 +10,6 @@ import com.google.firebase.messaging.ApsAlert;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-
-import org.springframework.stereotype.Service;
 
 @Service
 public class FCMService {

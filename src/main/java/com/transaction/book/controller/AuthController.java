@@ -28,6 +28,7 @@ import com.transaction.book.entities.JwtToken;
 import com.transaction.book.entities.User;
 import com.transaction.book.jwtSecurity.CustomUserDetail;
 import com.transaction.book.jwtSecurity.JwtProvider;
+import com.transaction.book.repository.HistryPaymentRepository;
 import com.transaction.book.services.serviceImpl.JwtTokenServiceImpl;
 import com.transaction.book.services.serviceImpl.OtpServiceImpl;
 import com.transaction.book.services.serviceImpl.UserServiceImpl;
@@ -52,6 +53,9 @@ public class AuthController {
 
     @Autowired
     private JwtTokenServiceImpl jwtTokenServiceImpl;
+
+    @Autowired
+    private HistryPaymentRepository histryPaymentRepository;
 
     @PostMapping("/registerUser")
     public ResponseEntity<SuccessResponse> registerUser(@Valid @RequestBody RegistrationRequest request) {
@@ -303,4 +307,5 @@ public class AuthController {
         }
     }
 
+   
 }

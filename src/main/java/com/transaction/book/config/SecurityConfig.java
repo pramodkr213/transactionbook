@@ -20,7 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-
 import com.transaction.book.jwtSecurity.CustomUserDetail;
 import com.transaction.book.jwtSecurity.JwtValidator;
 import com.transaction.book.services.serviceImpl.JwtTokenServiceImpl;

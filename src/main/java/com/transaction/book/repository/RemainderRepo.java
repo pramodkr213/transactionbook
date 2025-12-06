@@ -1,6 +1,5 @@
 package com.transaction.book.repository;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;

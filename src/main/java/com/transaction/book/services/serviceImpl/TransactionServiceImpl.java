@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.transaction.book.dto.responseDTO.TransactionResponse;
 import com.transaction.book.entities.Transaction;
+import com.transaction.book.repository.HistryPaymentRepository;
 import com.transaction.book.repository.TransactionRepo;
 import com.transaction.book.services.serviceInterface.TransactionService;
 
@@ -15,6 +16,8 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Autowired
     private TransactionRepo transactionRepo;
+     @Autowired
+    private HistryPaymentRepository histryPaymentRepository;
 
     @Override
     public Transaction addTransaction(Transaction transaction) {
@@ -58,4 +61,7 @@ public class TransactionServiceImpl implements TransactionService{
     public List<TransactionResponse> getAllTrasactions(long id, String startDate, String endDate) {
         return this.transactionRepo.findAllTransactions(id, startDate, endDate);
     }
+
+    
+    
 }

@@ -1,5 +1,7 @@
 package com.transaction.book.dto.responseDTO;
 
+import org.springframework.data.repository.query.Param;
+
 import com.transaction.book.entities.Address;
 
 import lombok.AllArgsConstructor;
@@ -17,4 +19,14 @@ public class CusotomerFullResponse {
     private String updateDate;
     private Address address;
     private String reference;
+    private double interest;
+    private String detail;
+    private double goldSellingAmt;
+    private double goldTakenAmt;
+    private double goldWgt;
+    private double silverSellingAmt;
+    private double silverTakenAmt;
+    private double silverWgt;
+    
+ 
 }

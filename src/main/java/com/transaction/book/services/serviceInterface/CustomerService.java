@@ -5,9 +5,14 @@ import java.util.List;
 import com.transaction.book.dto.responseDTO.CusotomerFullResponse;
 import com.transaction.book.dto.responseDTO.CustomerResponse;
 import com.transaction.book.dto.responseDTO.DueDate;
+import com.transaction.book.dto.responseDTO.OldCustomerResponse;
 import com.transaction.book.entities.Customer;
 
 public interface CustomerService {
+	//notifyOldCustomers
+
+	 List<OldCustomerResponse> getOldCustomers();
+	 
     Customer addCustomer(Customer customer);
 
     Customer getCustomerByMobileNo(String mobileNO);

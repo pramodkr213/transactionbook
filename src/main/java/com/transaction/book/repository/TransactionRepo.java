@@ -1,6 +1,7 @@
 package com.transaction.book.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,9 @@ import com.transaction.book.entities.Transaction;
 
 @Repository
 public interface TransactionRepo extends JpaRepository<Transaction, Long> {
+
+    Optional<Transaction> findById(Long id);
+
 
     @Query(value = "SELECT * FROM transaction WHERE id=:id AND delete_flag=false",nativeQuery = true)
     Transaction findById(@Param("id")long id);
@@ -60,5 +64,7 @@ public interface TransactionRepo extends JpaRepository<Transaction, Long> {
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.amount<0 AND deleteFlag=false")
     Double totalYouGave();
+
+    
 
 }

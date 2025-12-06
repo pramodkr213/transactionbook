@@ -1,5 +1,16 @@
 package com.transaction.book.helper;
 
+import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -13,17 +24,6 @@ import com.transaction.book.dto.responseDTO.CusotomerFullResponse;
 import com.transaction.book.dto.responseDTO.TransactionResponse;
 import com.transaction.book.entities.Remainder;
 import com.transaction.book.services.serviceImpl.CustomerServiceImpl;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 @Service
 public class PdfFormat {
@@ -230,6 +230,9 @@ public class PdfFormat {
     
             customerTable.addCell(createBoldCell("Amount:"));
             customerTable.addCell(new Cell().add(new Paragraph(String.valueOf(customer.getAmount()))));
+    
+            customerTable.addCell(createBoldCell("Detail:"));
+            customerTable.addCell(new Cell().add(new Paragraph(customer.getDetail() != null ? customer.getDetail() : "-")));
     
             document.add(customerTable);
             document.add(new Paragraph("\n")); // Space before remainder table

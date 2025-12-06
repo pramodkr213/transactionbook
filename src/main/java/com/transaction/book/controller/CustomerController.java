@@ -27,7 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.transaction.book.constants.RemainderStatus;
 import com.transaction.book.dto.requestDTO.CustomerRequestDto;
 import com.transaction.book.dto.requestDTO.DueDateRequest;
+import com.transaction.book.dto.requestDTO.TransferReceiptRequest;
 import com.transaction.book.dto.responseDTO.CusotomerFullResponse;
+import com.transaction.book.dto.responseDTO.OldCustomerResponse;
 import com.transaction.book.dto.responseObjects.DataResponse;
 import com.transaction.book.dto.responseObjects.SuccessResponse;
 import com.transaction.book.dto.updateDto.UpdateCustomer;
@@ -35,13 +37,15 @@ import com.transaction.book.entities.Address;
 import com.transaction.book.entities.Customer;
 import com.transaction.book.entities.Remainder;
 import com.transaction.book.entities.Transaction;
+import com.transaction.book.entities.TransferReceipt;
 import com.transaction.book.helper.DateTimeFormat;
 import com.transaction.book.helper.PdfFormat;
 import com.transaction.book.services.serviceImpl.AddressServiceImpl;
 import com.transaction.book.services.serviceImpl.CustomerServiceImpl;
-import com.transaction.book.services.serviceImpl.TransactionServiceImpl;
-
 import com.transaction.book.services.serviceImpl.RemainderServiceImpl;
+import com.transaction.book.services.serviceImpl.TransactionServiceImpl;
+import com.transaction.book.services.serviceImpl.TransferReceiptServiceImpl;
+
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,7 +69,16 @@ public class CustomerController {
 
     @Autowired
     private PdfFormat pdfFromat;
-
+    
+    @Autowired
+    private TransferReceiptServiceImpl transferReceiptServiceImpl;
+    
+    @GetMapping("/old-customers")
+    public ResponseEntity<List<OldCustomerResponse>> getOldCustomers() {
+        List<OldCustomerResponse> oldCustomers = customerServiceImpl.getOldCustomers();
+        return ResponseEntity.ok(oldCustomers);
+    }
+   
     @PostMapping("/addCustomer")
     public ResponseEntity<DataResponse> addCustomer(@RequestPart @Valid CustomerRequestDto request,
             @RequestPart(value = "bill", required = false) MultipartFile bill) {
@@ -91,12 +104,22 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.ALREADY_REPORTED).body(response);
         }
         try {
+        	        	
             Customer customer = new Customer();
             customer.setName(request.getName());
             customer.setMobileNo(request.getMobileNo());
-            customer.setGstinNo(request.getGstinNo());
+            customer.setGoldSellingAmt(request.getGoldSellingAmt());
+            customer.setGoldTakenAmt(request.getGoldTakenAmt());
+            customer.setGoldWgt(request.getGoldWgt());
+            customer.setSilverSellingAmt(request.getSilverSellingAmt());
+            customer.setSilverTakenAmt(request.getSilverTakenAmt());
+            customer.setSilverWgt(request.getSilverWgt());
+            customer.setInterest(request.getInterest());
+            customer.setDetail(request.getDetail());
+            
+           // customer.setGstinNo(request.getGstinNo());
             customer.setUpdateDate(DateTimeFormat.format(LocalDateTime.now()));
-            customer.setReference(request.getReference());
+           // customer.setReference(request.getReference());
             customer = this.customerServiceImpl.addCustomer(customer);
 
             if (request.getAmount() != 0) {
@@ -112,6 +135,7 @@ public class CustomerController {
                 }
                 customer.setAmount(transaction.getAmount());
                 transaction.setDate(request.getDate());
+                transaction.setDetail(request.getDetail());
                 transaction.setBill(billBytes);
                 transaction.setBalanceAmount(customer.getAmount());
                 transaction.setCustomer(customer);
@@ -143,6 +167,48 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    
+    
+    @PostMapping("/add/transfer/receipt")
+    public ResponseEntity<DataResponse> addTransferReceipt(@RequestBody TransferReceiptRequest request) {
+        log.info("Received request to add transfer receipt: {}", request);
+        DataResponse response = new DataResponse();
+        try {
+            TransferReceipt receipt = transferReceiptServiceImpl.addTransferReceipt(request);
+            response.setData(receipt);
+            response.setMessage("Transfer Receipt added successfully!");
+            response.setHttpStatus(HttpStatus.CREATED);
+            response.setStatusCode(201);
+            return ResponseEntity.of(Optional.of(response));
+        } catch (Exception e) {
+            log.error("Error adding transfer receipt: {}", e.getMessage());
+            response.setMessage(e.getMessage());
+            response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setStatusCode(500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // ✅ Get Transfer Receipt by Customer ID
+    @GetMapping("/findByCustomer/{customerId}")
+    public ResponseEntity<DataResponse> getTransferReceiptByCustomer(@PathVariable Long customerId) {
+        log.info("Fetching Transfer Receipt for customerId: {}", customerId);
+        DataResponse response = new DataResponse();
+        try {
+            TransferReceipt receipt = transferReceiptServiceImpl.findByCustomerId(customerId);
+            response.setData(receipt);
+            response.setMessage("Fetched Transfer Receipt successfully!");
+            response.setHttpStatus(HttpStatus.OK);
+            response.setStatusCode(200);
+            return ResponseEntity.of(Optional.of(response));
+        } catch (Exception e) {
+            log.error("Error fetching transfer receipt: {}", e.getMessage());
+            response.setMessage(e.getMessage());
+            response.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setStatusCode(500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
     @GetMapping("/getAllCustomers")
     public ResponseEntity<DataResponse> getAllCustomer(
@@ -158,7 +224,7 @@ public class CustomerController {
             response.setMessage("get all Customers !");
             response.setHttpStatus(HttpStatus.OK);
             response.setStatusCode(200);
-            return ResponseEntity.of(Optional.of(response));
+            return ResponseEntity.of(Optional.of(response));	
         } catch (Exception e) {
             log.error("Error fetching customers: {}", e.getMessage());
             response.setMessage(e.getMessage());
@@ -208,6 +274,7 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+  
 
     @PostMapping("/updateCustomer")
     public ResponseEntity<SuccessResponse> updateCustomer(@Valid @RequestBody UpdateCustomer request) {
@@ -223,9 +290,17 @@ public class CustomerController {
         }
         try {
             customer.setName(request.getName());
-            customer.setGstinNo(request.getGstinNo());
+            //customer.setGstinNo(request.getGstinNo());
             customer.setMobileNo(request.getMobileNo());
-            customer.setReference(request.getReference());
+            customer.setGoldSellingAmt(request.getGoldSellingAmt());
+            customer.setGoldTakenAmt(request.getGoldTakenAmt());
+            customer.setGoldWgt(request.getGoldWgt());
+            customer.setSilverSellingAmt(request.getSilverSellingAmt());
+            customer.setSilverTakenAmt(request.getSilverTakenAmt());
+            customer.setSilverWgt(request.getSilverWgt());
+            customer.setInterest(request.getInterest());
+            customer.setDetail(request.getDetail());
+            //customer.setReference(request.getReference());
             if (request.getAddress() != null) {
                 if (customer.getAddress() == null) {
                     Address address = new Address();
